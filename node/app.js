@@ -2,7 +2,7 @@ var serialport=require("serialport");
 var isJSON = require("is-json");
 var config = require("./config/config");  
 
-var serialPort = new serialport("config.serial.port", {
+var serialPort = new serialport(config.serial.port, {
   baudRate: 9600, autoOpen: false, parser: serialport.parsers.readline('\n')
 });
 //serialPort.close() ;
