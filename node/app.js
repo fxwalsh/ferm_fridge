@@ -1,14 +1,8 @@
 var serialport=require("serialport");
 var isJSON = require("is-json");
-//var SerialPort = serialport.SerialPort;
+var config = require("./config/config");  
 
-//var serialPort = new SerialPort("/dev/ttyACM0", {
-	//var serialPort = new SerialPort('COM4', {baudrate: 9600}, true);
-//	var serialPort = new SerialPort("COM4", {
-//	parser: serialport.parsers.readline("\n")
-//});
-
-var serialPort = new serialport("COM4", {
+var serialPort = new serialport("config.serial.port", {
   baudRate: 9600, autoOpen: false, parser: serialport.parsers.readline('\n')
 });
 //serialPort.close() ;
@@ -20,9 +14,9 @@ var lastData; //last data recieved  from brew controller.
 
 var PubNub = require("pubnub");
 
-var keys = require("./config/pubnub");  
+
  
-var pubnub = new PubNub(keys);
+var pubnub = new PubNub(config.pubnub.keys);
 
 
 var openPort = function(){
@@ -69,7 +63,7 @@ Publish Messages
   var publish = function () {
     if (isJSON(lastData)) //validate it's JSON before publish.
       pubnub.publish({ 
-      channel   : 'brew_data',
+      channel   : config.pubnub.channel,
       message   : lastData,
       callback  : function(e) { console.log( "SUCCESS!", e ); },
       error     : function(e) { console.log( "FAILED! RETRY PUBLISH!", e ); }
