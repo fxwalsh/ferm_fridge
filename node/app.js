@@ -43,7 +43,7 @@ serialPort.on('close', function() {
  serialPort.on('data', function(data) {
       try {
 
-      	console.log(data);
+    //  	console.log(data);
         if (JSON.parse(data).hasOwnProperty("beerTemp")){ 
           lastData = data;
         }
