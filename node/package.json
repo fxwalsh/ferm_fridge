@@ -11,7 +11,7 @@
   "dependencies": {
     "is-json": "^2.0.0",
     "mongoose": "^4.4.10",
-    "pubnub": "^3.14.4",
-    "serialport": "2.0.6"
+    "pubnub": "^4.3.3",
+    "serialport": "^4.0.7"
   }
 }

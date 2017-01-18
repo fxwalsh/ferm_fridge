@@ -1,17 +1,28 @@
 var serialport=require("serialport");
 var isJSON = require("is-json");
-var SerialPort = serialport.SerialPort;
+//var SerialPort = serialport.SerialPort;
 
-var serialPort = new SerialPort("/dev/ttyACM0", {
-	parser: serialport.parsers.readline("\n")
+//var serialPort = new SerialPort("/dev/ttyACM0", {
+	//var serialPort = new SerialPort('COM4', {baudrate: 9600}, true);
+//	var serialPort = new SerialPort("COM4", {
+//	parser: serialport.parsers.readline("\n")
+//});
+
+var serialPort = new serialport("COM4", {
+  baudRate: 9600, autoOpen: false, parser: serialport.parsers.readline('\n')
 });
+//serialPort.close() ;
 console.log("created serialport");
 var publishInterval = 5000; //publish interval in millisecs
 var reconnectInterval = 10000; //publish interval in millisecs
 
 var lastData; //last data recieved  from brew controller.
 
-var pubnub = require("./config/pubnub");
+var PubNub = require("pubnub");
+
+var keys = require("./config/pubnub");  
+ 
+var pubnub = new PubNub(keys);
 
 
 var openPort = function(){
@@ -19,7 +30,7 @@ serialPort.open(function (error) {
   if ( error ) {
     console.log('failed to open: '+error);
 
-    setTimeout(openPort,reconnectInterval);
+   // setTimeout(openPort,reconnectInterval);
   } else {
     console.log('open');
   }
@@ -27,7 +38,7 @@ serialPort.open(function (error) {
 
 serialPort.on('error', function() {
       console.log('Cannot Connect - retrying');
-    //  setTimeout(openPort,reconnectInterval);
+     setTimeout(openPort,reconnectInterval);
     });
 
 serialPort.on('close', function() {
@@ -35,13 +46,16 @@ serialPort.on('close', function() {
       setTimeout(openPort,reconnectInterval);
     });
 
-        serialPort.on('data', function(data) {
+ serialPort.on('data', function(data) {
       try {
-        if (JSON.parse(data).hasOwnProperty("beer_temp")){ 
+
+      	console.log(data);
+        if (JSON.parse(data).hasOwnProperty("beerTemp")){ 
           lastData = data;
         }
       } catch (e) {
             //Not JSON;
+            console.log(e);
             return;
         }
     });    
