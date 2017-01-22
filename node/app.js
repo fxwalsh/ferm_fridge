@@ -1,6 +1,7 @@
 var serialport=require("serialport");
 var isJSON = require("is-json");
 var config = require("./config/config");  
+var bodyParser = require('body-parser')
 
 var serialPort = new serialport(config.serial.port, {
   baudRate: 9600, autoOpen: false, parser: serialport.parsers.readline('\n')
@@ -13,11 +14,7 @@ var reconnectInterval = 10000; //publish interval in millisecs
 var lastData; //last data recieved  from brew controller.
 
 var PubNub = require("pubnub");
-
-
- 
 var pubnub = new PubNub(config.pubnub.keys);
-
 
 var openPort = function(){
 serialPort.open(function (error) {
@@ -49,11 +46,32 @@ serialPort.on('close', function() {
         }
       } catch (e) {
             //Not JSON;
-            console.log(e);
+            console.log("data returned from controller:" + data);
             return;
         }
     });    
 
+
+var express = require('express')
+var app = express()
+app.use( bodyParser.json() );       // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+  extended: true
+})); 
+
+app.post('/', function (req, res) {
+  serialPort.write(JSON.stringify(req.body), function(error){
+  	if (error){
+  		console.log("Error:"+ error.message);
+  	}else{
+  		res.send(JSON.stringify(req.body));
+  	}
+  })
+})
+
+app.listen(3000, function () {
+  console.log('app listening on port 3000!')
+})
 
   
 /* ---------------------------------------------------------------------------

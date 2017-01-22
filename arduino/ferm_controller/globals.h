@@ -5,8 +5,8 @@
 #include <DallasTemperature.h>
 
 const byte onewireData = A4;  // one-wire data
-const byte fridgeRelay = 2;       // relay 1 (fridge compressor)
-const byte heatRelay = 6;       // relay 2 (heating element)
+const byte fridgeRelay = 6;       // relay 1 (fridge compressor)
+const byte heatRelay = 2;       // relay 2 (heating element)
 
 
 
@@ -19,16 +19,21 @@ enum state {
   HEAT,
 };
 
-state fridgeState;
+state fridgeState, previousState;
+state actuatorState, previousActuatorState;
 
- int times[] = {0,0,0};
+unsigned long lastStateChange = 0;  // Last time state changed
+unsigned long stateChangeDelay = 10000;
+
+unsigned long times[] = {0,0,0};
+
  
 float beerTemp;
 float fridgeTemp;
 
 byte Active;
 double SetPoint, Hysteresis, MaxChamberTemp, MinChamberTemp;  // SP, PV, CO, tuning params for main PID
-
+unsigned long maxHeatTime;
 
 // Data wire is plugged into port 2 on the Arduino
 

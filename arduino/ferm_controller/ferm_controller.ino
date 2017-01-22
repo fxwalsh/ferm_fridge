@@ -29,6 +29,7 @@ void setup() {
 
   initSerialPort();
   fridgeState = IDLE;
+  actuatorState = IDLE;
   timeElapsed=0;
 }
 
@@ -36,7 +37,8 @@ void loop() {
 
   if (Serial.available() > 0)
   {
-    String str = Serial.readStringUntil('\n');
+    char str[200]; 
+    Serial.readBytesUntil('\n',str,200);
     updateSettings(str);
   }
 
@@ -44,9 +46,9 @@ void loop() {
   sensors.requestTemperatures();
   beerTemp = sensors.getTempC(beerThermometer);
   fridgeTemp = sensors.getTempC(fridgeThermometer);
-
-  state previousState = fridgeState;
-  if (beerTemp < SetPoint - Hysteresis) {
+ 
+  previousState = fridgeState;
+  if ((beerTemp < (SetPoint - Hysteresis)) && (fridgeTemp < MaxChamberTemp)) {
     fridgeState = HEAT;
   } else if (beerTemp > (SetPoint + Hysteresis)) {
     fridgeState = COOL;
@@ -54,16 +56,24 @@ void loop() {
     fridgeState = IDLE;
   }
   if (previousState!=fridgeState){
-    times[previousState]=times[previousState]+(timeElapsed/1000);
-    timeElapsed=0;
+    lastStateChange = millis();
   }
-  updateRelays();
+  
+  if ((millis() - lastStateChange) > stateChangeDelay) {
+    if (actuatorState!=fridgeState){
+         updateRelays();
+         times[previousActuatorState]=times[previousActuatorState]+(timeElapsed/1000);
+         timeElapsed=0;
+    }
+  }
   writeState();
-  delay(500);
+  delay(1000);
 }
 
 void updateRelays() {
-  switch (fridgeState) {
+  previousActuatorState = actuatorState;
+  actuatorState = fridgeState;
+  switch (actuatorState) {
     default:
     case IDLE:
       digitalWrite(fridgeRelay, HIGH);
@@ -78,12 +88,23 @@ void updateRelays() {
       digitalWrite(heatRelay, HIGH);
       break;
   }
-
-
 }
 
-void updateSettings(String str) {
-  Serial.print(str);
+void updateSettings(char json[]) {
+  
+  boolean settingsChanged = false;
+  StaticJsonBuffer<200> jsonBuffer;
+
+  JsonObject& root = jsonBuffer.parseObject(json);
+  double tempSetPoint  = root["setPoint"];
+  if (tempSetPoint >MinChamberTemp && tempSetPoint<MaxChamberTemp){
+    SetPoint = tempSetPoint; 
+    settingsChanged = true;
+  }
+
+  if (settingsChanged){
+    writeEEPROM();
+  }
 }
 
 void writeState() {
@@ -93,7 +114,7 @@ void writeState() {
   root["beerTemp"] = beerTemp;
   root["fridgeTemp"] = fridgeTemp;
   root["setPoint"] = SetPoint;
-  switch (fridgeState) {
+  switch (actuatorState) {
     default:
       root["state"] = "DUNNO";
       break;
@@ -107,7 +128,7 @@ void writeState() {
       root["state"] = "COOLING";
       break;
   }
-  int tempTime=timeElapsed/1000;
+ unsigned long tempTime=timeElapsed/1000;
  root["timeElapsed"] = tempTime;
   JsonArray& currentTimes = root.createNestedArray("times");
   currentTimes.add(times[0]);  // 6 is the number of decimals to print
