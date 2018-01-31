@@ -29,7 +29,6 @@ function subscribe(channel) {
             console.log('ERROR  ' + JSON.stringify(r));
         },
         'callback' : function(m,a,subscribed_channel,c,real_channel) {
-           // console.log(JSON.stringify(m));
             BrewData.create(JSON.parse(m), function(err, brewdata) {
     if(err) { return err; }
     console.log(brewdata);;

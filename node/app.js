@@ -1,96 +1,84 @@
-var serialport=require("serialport");
-var isJSON = require("is-json");
-var config = require("./config/config");  
-var bodyParser = require('body-parser')
+import Serialport from 'serialport'
+import isJSON from 'is-json'
+import config from './config/config'
+import bodyParser from 'body-parser'
+import express from 'express'
 
-var serialPort = new serialport(config.serial.port, {
-  baudRate: 9600, autoOpen: false, parser: serialport.parsers.readline('\n')
-});
-//serialPort.close() ;
-console.log("created serialport");
-var publishInterval = 5000; //publish interval in millisecs
-var reconnectInterval = 10000; //publish interval in millisecs
+const serialPort = new Serialport(config.serial.port, {
+  baudRate: config.serial.baud, autoOpen: false, parser: Serialport.parsers.readline('\n')
+})
 
-var lastData; //last data recieved  from brew controller.
+console.log('created serialport')
 
-var PubNub = require("pubnub");
-var pubnub = new PubNub(config.pubnub.keys);
+let lastData // last data recieved  from brew controller.
+const PubNub = require('pubnub')
+const pubnub = new PubNub(config.pubnub.keys)
 
-var openPort = function(){
-serialPort.open(function (error) {
-  if ( error ) {
-    console.log('failed to open: '+error);
+const openPort = () => {
+  serialPort.open((error) => {
+    if (error) {
+      console.log('failed to open: ' + error)
+    } else {
+      console.log('open')
+    }
+  })
+}
 
-   // setTimeout(openPort,reconnectInterval);
-  } else {
-    console.log('open');
+serialPort.on('error', () => {
+  console.log('Cannot Connect - retrying')
+  setTimeout(openPort, config.serial.reconnectInterval)
+})
+
+serialPort.on('close', () => {
+  console.log('port closed.')
+  setTimeout(openPort, config.serial.reconnectInterval)
+})
+
+serialPort.on('data', (data) => {
+  try {
+    if (JSON.parse(data).hasOwnProperty('beerTemp')) {
+      lastData = data
+    }
+  } catch (e) { // Not JSON;
+    console.log('data returned from controller:' + data)
   }
-});};
+})
 
-serialPort.on('error', function() {
-      console.log('Cannot Connect - retrying');
-     setTimeout(openPort,reconnectInterval);
-    });
-
-serialPort.on('close', function() {
-      console.log('port closed.');
-      setTimeout(openPort,reconnectInterval);
-    });
-
- serialPort.on('data', function(data) {
-      try {
-
-    //  	console.log(data);
-        if (JSON.parse(data).hasOwnProperty("beerTemp")){ 
-          lastData = data;
-        }
-      } catch (e) {
-            //Not JSON;
-            console.log("data returned from controller:" + data);
-            return;
-        }
-    });    
-
-
-var express = require('express')
-var app = express()
-app.use( bodyParser.json() );       // to support JSON-encoded bodies
+const app = express()
+app.use(bodyParser.json()) // to support JSON-encoded bodies
 app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
   extended: true
-})); 
+}))
 
-app.post('/', function (req, res) {
-  serialPort.write(JSON.stringify(req.body), function(error){
-  	if (error){
-  		console.log("Error:"+ error.message);
-  	}else{
-  		res.send(JSON.stringify(req.body));
-  	}
+app.post('/', (req, res) => {
+  serialPort.write(JSON.stringify(req.body), (error) => {
+    if (error) {
+      console.log('Error:' + error.message)
+    } else {
+      res.send(JSON.stringify(req.body))
+    }
   })
 })
 
-app.listen(3000, function () {
-  console.log('app listening on port 3000!')
+app.listen(config.port, () => {
+  console.log(`app listening on port ${config.port}`)
 })
 
-  
 /* ---------------------------------------------------------------------------
 Publish Messages
 --------------------------------------------------------------------------- */
 
-  var publish = function () {
-    if (isJSON(lastData)) //validate it's JSON before publish.
-      pubnub.publish({ 
-      channel   : config.pubnub.channel,
-      message   : lastData,
-      callback  : function(e) { console.log( "SUCCESS!", e ); },
-      error     : function(e) { console.log( "FAILED! RETRY PUBLISH!", e ); }
-      });
-    setTimeout(publish,publishInterval);
-    }
-    
-  openPort();
-  publish();
+const publish = () => {
+  if (isJSON(lastData)) { // validate it's JSON before publish.
+    pubnub.publish({
+      channel: config.pubnub.channel,
+      message: lastData,
+      callback: (e) => { console.log('SUCCESS!', e) },
+      error: (e) => { console.log('FAILED! RETRY PUBLISH!', e) }
+    })
+    setTimeout(publish, config.serial.publishInterval)
+  }
+}
 
-
-
+openPort()
+publish()

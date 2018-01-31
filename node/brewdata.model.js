@@ -1,14 +1,12 @@
-'use strict';
+import mongoose from 'mongoose'
+const Schema = mongoose.Schema
 
-var mongoose = require('mongoose'),
-    Schema = mongoose.Schema;
-
-var BrewDataSchema = new Schema({
+const BrewDataSchema = new Schema({
   beer_temp: Number,
   fridge_temp: Number,
   set_point: Number,
   fridge_state: Number,
   runningTime: Number
-});
+})
 
-module.exports = mongoose.model('BrewData', BrewDataSchema);
+export default mongoose.model('BrewData', BrewDataSchema)
