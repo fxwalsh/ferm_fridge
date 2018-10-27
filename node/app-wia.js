@@ -1,6 +1,6 @@
 import Serialport from 'serialport'
 import isJSON from 'is-json'
-import config from './config/config'
+//import config from './config/config'
 import bodyParser from 'body-parser'
 import express from 'express'
 
@@ -25,12 +25,12 @@ const openPort = () => {
 
 serialPort.on('error', () => {
   console.log('Cannot Connect - retrying')
-  setTimeout(openPort, config.serial.reconnectInterval)
+  setTimeout(openPort, 10000)
 })
 
 serialPort.on('close', () => {
   console.log('port closed.')
-  setTimeout(openPort, config.serial.reconnectInterval)
+  setTimeout(openPort, 10000)
 })
 
 serialPort.on('data', (data) => {
@@ -60,8 +60,8 @@ app.post('/', (req, res) => {
   })
 })
 
-app.listen(config.port, () => {
-  console.log(`app listening on port ${config.port}`)
+app.listen(8080, () => {
+  console.log(`app listening on port 8080`)
 })
 
 /* ---------------------------------------------------------------------------
@@ -77,7 +77,7 @@ const publish = () => {
         data: lastData.beerTemp
     });
 
-    setTimeout(publish, config.serial.publishInterval)
+    setTimeout(publish, 10000)
   }
 }
 
