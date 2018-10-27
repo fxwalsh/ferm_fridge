@@ -69,7 +69,7 @@ Publish Messages
 --------------------------------------------------------------------------- */
 
 const publish = () => {
-    console.log(publishing)
+    console.log("publishing")
   if (isJSON(lastData)) { // validate it's JSON before publish.
     console.log(lastData)
     wia.events.publish({
