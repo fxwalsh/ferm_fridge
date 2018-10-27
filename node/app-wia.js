@@ -34,7 +34,7 @@ serialPort.on('close', () => {
 })
 
 serialPort.on('data', (data) => {
-    console.log("data")
+    console.log(data)
   try {
     if (JSON.parse(data).hasOwnProperty('beerTemp')) {
       lastData = data
@@ -77,8 +77,9 @@ const publish = () => {
         data: lastData.beerTemp
     });
 
-    setTimeout(publish, 10000)
+   
   }
+  setTimeout(publish, 10000)
 }
 
 openPort()
