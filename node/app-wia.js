@@ -4,8 +4,8 @@ import config from './config/config'
 import bodyParser from 'body-parser'
 import express from 'express'
 
-const serialPort = new Serialport(config.serial.port, {
-  baudRate: config.serial.baud, autoOpen: false, parser: Serialport.parsers.readline('\n')
+const serialPort = new Serialport("/dev/ttyACM0", {
+  baudRate: 9600, autoOpen: false, parser: Serialport.parsers.readline('\n')
 })
 
 console.log('created serialport')
@@ -34,6 +34,7 @@ serialPort.on('close', () => {
 })
 
 serialPort.on('data', (data) => {
+    console.log("data")
   try {
     if (JSON.parse(data).hasOwnProperty('beerTemp')) {
       lastData = data
@@ -68,6 +69,7 @@ Publish Messages
 --------------------------------------------------------------------------- */
 
 const publish = () => {
+    console.log(publishing)
   if (isJSON(lastData)) { // validate it's JSON before publish.
     console.log(lastData)
     wia.events.publish({
