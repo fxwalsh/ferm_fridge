@@ -1,0 +1,126 @@
+
+<!doctype html>
+
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+
+  <title>BEER!</title>
+  <meta name="description" content="MORE BEER">
+  <meta name="author" content="fxwalsh">
+
+
+  <link type="text/css" rel="stylesheet" href="https://pubnub.github.io/eon/v/eon/1.0.0/eon.css" />
+
+
+  <!--[if lt IE 9]>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.js"></script>
+  <![endif]-->
+</head>
+
+<body>
+
+<script type="text/javascript" src="https://pubnub.github.io/eon/v/eon/1.0.0/eon.js"></script>
+
+<div id="chart"></div>
+<div id="beerTempGauge"></div>
+<script type="text/javascript">
+var __eon_pubnub = new PubNub({
+  subscribeKey: "sub-c-548c158a-eeea-11e5-ab43-02ee2ddab7fe"
+});
+var __eon_cols = ["beerTemp","fridgeTemp","setPoint"];
+var __eon_labels = {"beerTemp":"beerTemp","fridgeTemp":"fridgeTemp","setPoint":"setPoint"};
+chart = eon.chart({
+  pubnub: __eon_pubnub,
+  channels: ["brew_data"],
+  history: false,
+  flow: true,
+  rate: 1000,
+  limit: 5,
+  generate: {
+    bindto: "#chart",
+    data: {
+      colors: {"beerTemp":"#113F8C","fridgeTemp":"#1f77b4","setPoint":"#ff7f0e"},
+      type: "spline"
+    },
+    transition: {
+      duration: 250
+    },
+    axis: {
+      x: {
+        label: "Time"
+      },
+      y: {
+        label: "Degrees C"
+      }
+    },
+    grid: {
+      x: {
+        show: false
+      },
+      y: {
+        show: false
+      }
+    },
+    tooltip: {
+     show: true
+    },
+    point: {
+      show: true
+    }
+  },
+  transform: function(message) {
+    console.log(message);
+    //var message = eon.c.flatten(message);
+    var message = JSON.parse(message);
+    console.log(message);
+    var o = {};
+    for(index in message) {
+      if(__eon_cols.indexOf(index) > -1){
+        o[__eon_labels[index] || index] = message[index];
+      }
+    }
+    return {
+      eon: o
+    };
+  }
+});
+eon.chart({
+  pubnub: __eon_pubnub,
+  channels: ['brew_data'],
+  generate: {
+    bindto: '#beerTempGauge',
+    data: {
+      type: 'gauge',
+    },
+    gauge: {
+        label: {
+           format: function(value, ratio) {
+                return value;
+            },
+            show: true // to turn off the min/max labels.
+        },
+      min: 0,
+      max: 40
+    },
+    color: {
+      pattern: ['#FF0000', '#F6C600', '#60B044'],
+      threshold: {
+        values: [10, 20, 30]
+      }
+
+    }
+  }
+ ,transform: function(message) {
+    var message = JSON.parse(message);
+    console.log(message);
+    var o = {};
+        o['Beer Temp'] = message['beerTemp'];
+    return {
+      eon: o
+    };
+  }});
+</script>
+
+</body>
+</html>
