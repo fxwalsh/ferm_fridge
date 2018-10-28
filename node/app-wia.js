@@ -75,10 +75,10 @@ const publish = () => {
     wia.events.publish({
         name: 'beer-temp',
         data: lastData.beerTemp
-    //});
+    });
 
    
-  }
+  //}
   setTimeout(publish, 10000)
 }
 
