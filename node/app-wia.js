@@ -37,7 +37,7 @@ serialPort.on('data', (data) => {
     console.log(data)
   try {
     if (JSON.parse(data).hasOwnProperty('beerTemp')) {
-      lastData = data
+      lastData = JSON.parse(data)
     }
   } catch (e) { // Not JSON;
     console.log('data returned from controller:' + data)
