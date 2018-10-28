@@ -76,6 +76,10 @@ const publish = () => {
         name: 'beer-temp',
         data: lastData.beerTemp
     });
+    wia.events.publish({
+        name: 'fridge-temp',
+        data: lastData.fridgeTemp
+    });
 
    
   }
