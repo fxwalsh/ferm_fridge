@@ -70,7 +70,7 @@ Publish Messages
 
 const publish = () => {
     console.log("publishing")
-  //if (isJSON(lastData)) { // validate it's JSON before publish.
+  if (lastData) { 
     console.log(lastData.beerTemp)
     wia.events.publish({
         name: 'beer-temp',
@@ -78,7 +78,7 @@ const publish = () => {
     });
 
    
-  //}
+  }
   setTimeout(publish, 10000)
 }
 
