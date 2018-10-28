@@ -8,10 +8,13 @@ const serialPort = new Serialport("/dev/ttyACM0", {
   baudRate: 9600, autoOpen: false, parser: Serialport.parsers.readline('\n')
 })
 
+require('dotenv').config()
+
 console.log('created serialport')
 
 let lastData // last data recieved  from brew controller.
-const wia = require('wia')('d_sk_Qm7syTMQNmMiuhDCdE1yoO2p');
+const wia = require('wia')(process.env.wia-key);
+
 
 const openPort = () => {
   serialPort.open((error) => {
@@ -25,16 +28,15 @@ const openPort = () => {
 
 serialPort.on('error', () => {
   console.log('Cannot Connect - retrying')
-  setTimeout(openPort, 10000)
+  setTimeout(openPort, process.env.connect-period)
 })
 
 serialPort.on('close', () => {
   console.log('port closed.')
-  setTimeout(openPort, 10000)
+  setTimeout(openPort, process.env.connect-period)
 })
 
 serialPort.on('data', (data) => {
-    console.log(data)
   try {
     if (JSON.parse(data).hasOwnProperty('beerTemp')) {
       lastData = JSON.parse(data)
@@ -60,8 +62,8 @@ app.post('/', (req, res) => {
   })
 })
 
-app.listen(8080, () => {
-  console.log(`app listening on port 8080`)
+app.listen(process.env.port, () => {
+  console.log(`app listening`)
 })
 
 /* ---------------------------------------------------------------------------
@@ -83,12 +85,8 @@ const publish = () => {
 
    
   }
-  setTimeout(publish, 10000)
+  setTimeout(publish, process.env.publish-period)
 }
 
 openPort()
 publish()
-
-
-
-//const wia = require('wia')('d_sk_Qm7syTMQNmMiuhDCdE1yoO2p');
