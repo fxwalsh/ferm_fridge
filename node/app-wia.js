@@ -71,7 +71,7 @@ Publish Messages
 const publish = () => {
     console.log("publishing")
   if (isJSON(lastData)) { // validate it's JSON before publish.
-    console.log(lastData)
+    console.log(lastData.beerTemp)
     wia.events.publish({
         name: 'beer-temp',
         data: lastData.beerTemp
