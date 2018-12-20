@@ -4,7 +4,7 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development nodemon --exec babel-node app-wia.js",
+    "start": "cross-env NODE_ENV=development nodemon --exec babel-node app-pubnub.js",
     "test": "cross-env NODE_ENV=test mocha --compilers js:babel-core/register  --reporter mochawesome"
   },
   "author": "fxwalsh",
@@ -15,8 +15,9 @@
     "express": "^4.14.0",
     "is-json": "^2.0.0",
     "mongoose": "^4.4.10",
+    "mqtt": "^2.18.8",
     "pubnub": "^4.3.3",
-    "serialport": "^4.0.7",
+    "serialport": "^7.0.2",
     "wia": "^1.4.1"
   },
   "devDependencies": {

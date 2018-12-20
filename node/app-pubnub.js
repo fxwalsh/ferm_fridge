@@ -1,5 +1,6 @@
 import Serialport from 'serialport'
 import isJSON from 'is-json'
+//import config from './config/config'
 import bodyParser from 'body-parser'
 import express from 'express'
 
@@ -20,7 +21,13 @@ require('dotenv').config()
 console.log('created serialport')
 
 let lastData // last data recieved  from brew controller.
-const wia = require('wia')(process.env.wiakey);
+const PubNub = require('pubnub')
+console.log(process.env.pubnub_publish)
+const pubnub = new PubNub({
+			publishKey: process.env.pubnub_publish,
+			subscribeKey: process.env.pubnub_subscribe
+			})
+
 
 
 //const openPort = () => {
@@ -78,24 +85,17 @@ Publish Messages
 --------------------------------------------------------------------------- */
 
 const publish = () => {
-    console.log("publishing")
-  if (lastData) { 
-    console.log(lastData.beerTemp)
-    wia.events.publish({
-        name: 'beer-temp',
-        data: lastData.beerTemp
-    });
-    wia.events.publish({
-        name: 'fridge-temp',
-        data: lastData.fridgeTemp
-    });
-   wia.events.publish({
-        name: 'state',
-        data: lastData.state
-    });
+  if (lastData) {
+	console.log("publishing") 
+      pubnub.publish({
+      channel: 'brew_data',
+      message: JSON.stringify(lastData),
+      callback: (e) => { console.log('SUCCESS!', e) },
+      error: (e) => { console.log('FAILED! RETRY PUBLISH!', e) }
+    })
    
   }
-  setTimeout(publish, 60000)
+  setTimeout(publish, process.env.publishperiod)
 }
 
 //openPort()
