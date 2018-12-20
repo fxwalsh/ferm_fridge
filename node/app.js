@@ -11,8 +11,8 @@ const serialPort = new Serialport(config.serial.port, {
 console.log('created serialport')
 
 let lastData // last data recieved  from brew controller.
-const PubNub = require('pubnub')
-const pubnub = new PubNub(config.pubnub.keys)
+//const PubNub = require('pubnub')
+//const pubnub = new PubNub(config.pubnub.keys)
 
 const openPort = () => {
   serialPort.open((error) => {
