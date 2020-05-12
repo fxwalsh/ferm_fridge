@@ -5,7 +5,9 @@ import bodyParser from 'body-parser'
 import express from 'express'
 
 const serialPort = new Serialport(config.serial.port, {
-  baudRate: config.serial.baud, autoOpen: false, parser: Serialport.parsers.readline('\n')
+  baudRate: config.serial.baud,
+  autoOpen: false,
+  parser: Serialport.parsers.readline('\n')
 })
 
 console.log('created serialport')
@@ -46,7 +48,7 @@ serialPort.on('data', (data) => {
 
 const app = express()
 app.use(bodyParser.json()) // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
   extended: true
 }))
 
@@ -60,25 +62,34 @@ app.post('/', (req, res) => {
   })
 })
 
+app.get('/', (req, res) => {
+  res.send(lastData).end()
+})
+
 app.listen(config.port, () => {
   console.log(`app listening on port ${config.port}`)
 })
 
 /* ---------------------------------------------------------------------------
 Publish Messages
---------------------------------------------------------------------------- */
+
 
 const publish = () => {
   if (isJSON(lastData)) { // validate it's JSON before publish.
     pubnub.publish({
       channel: config.pubnub.channel,
       message: lastData,
-      callback: (e) => { console.log('SUCCESS!', e) },
-      error: (e) => { console.log('FAILED! RETRY PUBLISH!', e) }
+      callback: (e) => {
+        console.log('SUCCESS!', e)
+      },
+      error: (e) => {
+        console.log('FAILED! RETRY PUBLISH!', e)
+      }
     })
     setTimeout(publish, config.serial.publishInterval)
   }
 }
-
+--------------------------------------------------------------------------- */
 openPort()
-publish()
+//publish()
+

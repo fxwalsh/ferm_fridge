@@ -1,5 +1,5 @@
 import SerialPort from 'serialport'
-import Delimiter from 'serialport/parser-delimiter'
+import Delimiter from '@serialport/parser-delimiter'
 import Blynk from 'blynk-library'
 import bodyParser from 'body-parser'
 import express from 'express'
