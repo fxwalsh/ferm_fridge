@@ -53,6 +53,7 @@ app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
 }))
 
 app.post('/', (req, res) => {
+  console.log(req.body)
   serialPort.write(JSON.stringify(req.body), (error) => {
     if (error) {
       console.log('Error:' + error.message)

@@ -37,7 +37,8 @@ app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
 }))
 
 app.post('/', (req, res) => {
-  serialPort.write(JSON.stringify(req.body), (error) => {
+  console.log(JSON.stringify(req.body))
+  serialPort.write("{\"setPoint\":30}", (error) => {
     if (error) {
       console.log('Error:' + error.message)
     } else {
@@ -52,5 +53,5 @@ app.get('/', (req, res) => {
 })
 
 app.listen(process.env.port, () => {
-  console.log(`app listening`)
+  console.log(`app listening on port `+ process.env.port)
 })

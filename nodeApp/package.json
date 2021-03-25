@@ -4,7 +4,8 @@
   "description": "",
   "main": "app.js",
   "scripts": {
-    "start": "cross-env NODE_ENV=development nodemon --exec babel-node app-pubnub.js",
+    "start": "cross-env NODE_ENV=development nodemon --exec babel-node index.js",
+    "blynk": "cross-env NODE_ENV=development nodemon --exec babel-node app-blynk.js",
     "test": "cross-env NODE_ENV=test mocha --compilers js:babel-core/register  --reporter mochawesome"
   },
   "author": "fxwalsh",
