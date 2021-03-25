@@ -1,7 +1,9 @@
+
+
 #include <ArduinoJson.h>
 #include <DallasTemperature.h>
 #include <OneWire.h>
-#include <EEPROMio.h>
+#include "EEPROMio.h"
 #include "globals.h"
 #include <elapsedMillis.h>
 
@@ -91,11 +93,11 @@ void updateRelays() {
 }
 
 void updateSettings(char json[]) {
-  
+  Serial.println(json);
   boolean settingsChanged = false;
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonDocument<200> root;
 
-  JsonObject& root = jsonBuffer.parseObject(json);
+  deserializeJson(root,json);
   double tempSetPoint  = root["setPoint"];
   if (tempSetPoint >MinChamberTemp && tempSetPoint<MaxChamberTemp){
     SetPoint = tempSetPoint; 
@@ -108,9 +110,9 @@ void updateSettings(char json[]) {
 }
 
 void writeState() {
-  StaticJsonBuffer<200> jsonBuffer;
+  StaticJsonDocument<200> root;
 
-  JsonObject& root = jsonBuffer.createObject();
+ // JsonDocument root = jsonBuffer.createObject();
   root["beerTemp"] = beerTemp;
   root["fridgeTemp"] = fridgeTemp;
   root["setPoint"] = SetPoint;
@@ -130,12 +132,12 @@ void writeState() {
   }
  unsigned long tempTime=timeElapsed/1000;
  root["timeElapsed"] = tempTime;
-  JsonArray& currentTimes = root.createNestedArray("times");
+  JsonArray currentTimes = root.createNestedArray("times");
   currentTimes.add(times[0]);  // 6 is the number of decimals to print
   currentTimes.add(times[1]);
   currentTimes.add(times[2]);
 
-  root.printTo(Serial);
+  serializeJson(root,Serial);
   Serial.println();
 }
 
@@ -170,4 +172,3 @@ void writePresetsEEPROM() {      // save defaults to eeprom
   EEPROMWrite(10, (double)30, DOUBLE);
   EEPROMWrite(14, (double)5, DOUBLE);
 }
-
